@@ -1,0 +1,812 @@
+//on ready
+
+function showCartNotify(){
+      $("#cart-fixed").addClass("hover");
+      setTimeout(function(){
+          $("#cart-fixed").removeClass("hover");
+      },2000);
+    }
+
+    $(function () {
+        //hien thi tom tat cart
+        var check_cart = setInterval(function () {
+            if(showCartSummary()) clearInterval(check_cart);
+        }, 1000);
+    })
+
+
+    //show cart summary
+    function showCartSummary() {
+        var $status_container = $(".shopping-cart-item");
+
+        if(!Hura.Cart.isReady()) return false;
+
+        var cart_summary = Hura.Cart.getSummary();
+        //console.log("cart_summary = " + JSON.stringify(cart_summary, true, 4));
+        $status_container.html(cart_summary.item);
+
+        return true;
+    }
+  
+  	 function addProductToCart(product_id, variant_id, quantity, buyer_note) {
+        var product_prop = {
+            quantity: quantity ,
+            buyer_note : buyer_note
+        };
+
+        return Hura.Cart.Product.add(product_id, variant_id, product_prop);
+    }
+  
+  function listenBuyProduct(product_id,variant_id,quantity, redirect) {
+  		if(!Hura.Cart.isReady()) alert("Cart chua san sang!");
+        var product_id  = product_id;
+        var variant_id  = variant_id;
+        var buyer_note  = '';
+        var quantity = quantity;
+
+        var addStatus = addProductToCart(product_id, variant_id, quantity, buyer_note);
+                if(addStatus) {
+                    addStatus.then(function () {
+                        console.log("cart content = " + JSON.stringify(Hura.Cart.getCart(), true, 4));
+                        showCartSummary();
+  
+                        if (typeof redirect === 'undefined') {
+  							alert("Đã thêm sản phẩm vào giỏ hàng");
+                        	showCartNotify();
+                        }else if(redirect == 'cart'){
+  							location.href="/cart";
+  						}else if(redirect == 'payinstall'){
+  							location.href="/cart?show=tragop&type=cart";
+  						}
+                        	
+                    })
+                } else {
+                    console.log("cart content = " + JSON.stringify(Hura.Cart.getCart(), true, 4));
+                    Hura.Cart.goToCartPage();
+                }
+    }
+
+  function listenBuyDeal(deal_id,quantity,redirect) {
+  		if(!Hura.Cart.isReady()) alert("Cart chua san sang!");
+
+        var deal_info = {
+          id : deal_id,
+          quantity: 1,
+          buyer_note : '',
+        };
+        var addStatus = Hura.Cart.Deal.add(deal_info);
+  
+  	console.log("addStatus",addStatus);
+  
+                if(addStatus) {
+    				console.log("redirect",redirect);
+                    addStatus.then(function () {
+                        console.log("cart content = " + JSON.stringify(Hura.Cart.getCart(), true, 4));
+                        showCartSummary();
+
+                        if (typeof redirect === 'undefined') {
+  							alert("Đã thêm sản phẩm vào giỏ hàng");
+                        	showCartNotify();
+                        }else if(redirect == 'cart'){
+  							location.href="/cart";
+  						}
+                    })
+                } else {
+                    console.log("cart content = " + JSON.stringify(Hura.Cart.getCart(), true, 4));
+                    Hura.Cart.goToCartPage();
+                }
+    }
+
+var lazyLoadInstance = new LazyLoad({
+  elements_selector: ".lazy"
+});
+
+//scroll ngang
+  function setWidthScroll(wrap, item){
+    var width = 0;
+    $(item).each(function(){
+      width += $(this).outerWidth(true);
+    });  
+    $(wrap).width(width);
+  }
+
+$(".select .title").click(function(){
+  	$(this).parent().find(".content").toggle();
+});
+  
+$("body").click(function (e) {
+  var targ = $(".select");
+  if (!targ.is(e.target) && targ.has(e.target).length === 0) {
+    $(".select .content").hide();
+  }
+});  
+function show_datetime_from_unix(int){
+  	var date = new Date(int*1000);
+  	return date;
+  }
+function formatDate(a){
+    var a = new Date(parseInt(a)*1000);
+	
+    var year = a.getFullYear();
+    var month = a.getMonth()+1;
+    var date = a.getDate();
+    var hour = a.getHours();
+    var min = a.getMinutes();
+    var sec = a.getSeconds();
+  	var time = date + '/' + month + '/' + year + ' ' + hour + ':' + min + ':' + sec ;
+    return time;
+  }
+$('*[data-show]').click(function () {
+    var id = $(this).attr('data-show');
+    $(id).toggle();
+  });
+$("a").each(function(){
+  var url = location.href.toLowerCase();
+  if (this.href.toLowerCase() == url) {
+    $(this).addClass("current");
+  }
+});
+
+function startClock(time,day,hour,min,sec,callback) {
+        var t = time;
+  		var seconds = 0, minutes = 0, hours = 0, days = 0;
+
+        seconds = Math.floor((t) % 60);
+        minutes = Math.floor((t / 60) % 60);
+  		hours = Math.floor((t / (60 * 60)));
+        //hours = Math.floor((t / (60 * 60)) % 24);
+        //days = Math.floor(t / (60 * 60 * 24));
+
+        if(days <=9) days = "0"+days;
+        if(hours <=9) hours = "0"+hours;
+        if(minutes <=9) minutes = "0"+minutes;
+        if(seconds <=9) seconds = "0"+seconds;
+
+        if($(day)) $(day).html(days);
+        if($(hour)) $(hour).html(hours);
+  		if($(min)) $(min).html(minutes);
+  		if($(sec)) $(sec).html(seconds);
+  
+  		if(typeof callback !== 'undefined' && typeof callback == 'function'){
+           if(time <= 0) callback();
+        }
+  
+  		setTimeout(function() {
+            startClock(parseInt(time)-1,day,hour,min,sec,callback);
+        }, 1000);
+
+    }
+function getIdYoutube(url){
+      var video_id = url.split('v=')[1];
+      var ampersandPosition = video_id.indexOf('&');
+      if(ampersandPosition != -1) {
+        video_id = video_id.substring(0, ampersandPosition);
+      }
+      return video_id;
+    }
+function GetURLParameter(sParam)
+{
+    var sPageURL = window.location.search.substring(1);
+    var sURLVariables = sPageURL.split('&');
+    for (var i = 0; i < sURLVariables.length; i++)
+    {
+        var sParameterName = sURLVariables[i].split('=');
+        if (sParameterName[0] == sParam)
+        {
+            return sParameterName[1];
+        }
+    }
+}
+function setUserOption(key, value, return_url) {
+  window.location = "/ajax/user_set_option.php?key="+key+"&value="+value+"&return_url=" + encodeURIComponent(return_url);
+}
+function formatCurrency(a) {
+    var b = parseFloat(a).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1.").toString();
+    var len = b.length;
+    b = b.substring(0, len - 3);
+    return b;
+}
+function isOnScreen(elem) {
+  // if the element doesn't exist, abort
+  if( elem.length == 0 ) {
+    return;
+  }
+  var $window = jQuery(window)
+  var viewport_top = $window.scrollTop()
+  var viewport_height = $window.height()
+  var viewport_bottom = viewport_top + viewport_height
+  var $elem = jQuery(elem)
+  var top = $elem.offset().top
+  var height = $elem.height()
+  var bottom = top + height
+
+  return (top >= viewport_top && top < viewport_bottom) ||
+    (bottom > viewport_top && bottom <= viewport_bottom) ||
+    (height > viewport_height && top <= viewport_top && bottom >= viewport_bottom)
+}
+
+
+
+function collapse_content(item) {
+  var max_height = parseInt($(item).attr("data-max_height"));
+  
+  if($(item).height() > max_height){
+    $(item).css("max-height",max_height).addClass("content-collapse");
+  }
+  $(".js-viewmore-content").click(function () {
+    $(this).toggleClass("active");
+	$(item).toggleClass("content-collapse");
+    
+    if($(this).hasClass("active")){
+      $(item).css("max-height",9999999);
+      $(this).html('Thu gọn  <i class="fa fa-angle-up"></i>');
+    }else{
+      $(item).css("max-height",max_height);
+      $(this).html('Xem thêm  <i class="fa fa-angle-down"></i>');
+      $('html,body').animate({scrollTop:$(item).offset().top},500);
+    }
+  });
+}
+
+function subscribe_newsletter(a){
+  var email = $(a).val();
+  if(email.length > 3){
+    $.post("/ajax/post.php", { action : 'customer', action_type: 'register-for-newsletter', full_name : 'Khách hàng nhận bản tin', email: email }, function(data) {
+      if(data=='success') {
+        alert("Quý khách đã đăng ký thành công ");
+        $(a).val("");}
+      else if(data=='exist'){
+        alert("Email này đã tồn tại");
+      }
+      else {
+        alert('Lỗi xảy ra, vui lòng thử lại ');
+      }
+    });
+  }else{alert('Vui lòng nhập địa chỉ email');}
+}
+
+$("#toTop").click(function(){
+  $('html,body').animate({scrollTop:0},800);
+});
+
+$(".js-title-tab").click(function () {
+  $(this).parents(".js-tab").find(".js-title-tab").removeClass("active");
+  $(this).addClass("active");
+  $(this).parents(".js-tab").find(".js-content-tab").hide();
+
+  var holder = $(this).attr("data-tab");
+  $(holder).show();
+});
+
+$(".rating-selection input").click(function(){
+  $(this).parents(".rating-selection").find("input").prop("checked",false);
+  $(this).parents(".rating-selection").find("label").removeClass("active");
+  $(this).prop("checked",true);
+  $(this).parents("label").addClass("active");
+});
+
+function validateEmail(sEmail) {
+  var filter = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
+  if (filter.test(sEmail)) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+function validatePhoneNumber(a){
+  var number_regex1 = /^[0]\d{9}$/i;
+  var number_regex2 = /^[0]\d{10}$/i;
+
+  if(number_regex1.test(a) == false && number_regex2.test(a) == false) return false;
+  return true;
+}
+
+/*JS COMMENT FOR PROUDCT & ARTICLE*/
+function showReplyForm(id){
+  var element = $("#reply-comment-"+id);
+  $("#reply-comment-"+id).toggle();
+}
+function closeCommentFormInput(a){
+  $(a).hide();  
+}
+$(".js-show-form-input").focus(function(){
+  $(this).parent().find(".comment-form-input").show();
+});
+function formatDate(a){
+  var a = new Date(parseInt(a)*1000);
+
+  var year = a.getFullYear();
+  var month = a.getMonth()+1;
+  var date = a.getDate();
+  var hour = a.getHours();
+  var min = a.getMinutes();
+  var sec = a.getSeconds();
+  var time = date + '/' + month + '/' + year + ' ' + hour + ':' + min + ':' + sec ;
+  return time;
+}
+
+function check_field_comment(id){
+  var error = "";
+  var name = document.getElementById("name"+id).value;
+  var email = document.getElementById("email"+id).value;
+  var content = document.getElementById("content"+id).value;
+
+  if(name=='') error+= "Bạn chưa nhập tên\n";
+  /*
+  if(email=='') error+= "Bạn chưa nhập email\n";
+  else if(validateEmail(email) == false)
+    error+= "Email không hợp lệ\n";
+  */  
+  if(content=='') error+= "Bạn chưa nhập nội dung\n";
+
+  if(error=='') return true;
+  else {
+    alert(error);
+    return false;
+  }
+};  
+
+function postComment(type,id,reply) {
+  //type: comment, review
+  if(check_field_comment(id)==false) return false;
+
+  if(type=='review') type = 'review-feature';
+  var item_type = $(".form-post .item-type").val();
+  var item_id = $(".form-post .item-id").val();
+  var item_title = $(".form-post .item-title").val();
+  var title = $(".form-post .item-title").val();
+
+  if (reply == ''){
+    var rate = $(".form-post .rating-selection input:checked").val();
+    var avatar = "";
+    var note = "";
+    var user_name = $("#name"+id).val();
+    var user_email = $("#email"+id).val();   
+    var content = $("#content"+id).val();	
+
+    var payload = {
+      item_type   : item_type,
+      item_id     : item_id,
+      item_title  : item_title,
+      user_email  : user_email,
+      user_name   : user_name,
+      user_avatar : avatar,
+      user_note   : note,
+      rate        : rate,
+      title       : title,
+      content     : content,
+      files       : ''
+    };    
+    var ENDPOINT = "/ajax/post.php";
+
+    $.post(ENDPOINT, { action : type, action_type: "send", type : "ajax", user_post : payload }, function (data) {
+      console.log(data);
+      alert("Bạn đã gửi thành công, bình luận của bạn sẽ được kiểm duyệt trước khi hiển thị");
+      location.reload();
+    });
+  }
+  else{
+    var reply_to = id;
+    var rate = $(".form-reply"+id+" .rating-selection input:checked").val();
+    var avatar = "";
+    var note = "";
+    var user_name = $("#name"+id).val();
+    var user_email = $("#email"+id).val();
+    var content = $("#content"+id).val();	
+
+    var payload = {
+      item_type   : item_type,
+      item_id     : item_id,
+      reply_to    : reply_to,
+      item_title  : item_title,
+      user_email  : user_email,
+      user_name   : user_name,
+      user_avatar : avatar,
+      user_note   : note,
+      rate        : rate,
+      title       : title,
+      content     : content,
+      files       : ''
+    };    
+    var ENDPOINT = "/ajax/post.php";
+
+    $.post(ENDPOINT, { action : type, action_type: "send", type : "ajax", user_post : payload }, function (data) {
+      console.log(data);
+      alert("Bạn đã gửi thành công, bình luận của bạn sẽ được kiểm duyệt trước khi hiển thị");
+      location.reload();
+    });
+  }
+};
+
+$(".comment-list .avatar-user").each(function(){
+	var name = $(this).html().substring(0, 1);
+	$(this).html(name);
+});
+
+
+/*SEARCH*/
+function getTextAreaSelection(textarea) {
+  var start = textarea.selectionStart, end = textarea.selectionEnd;
+  return {
+    start: start,
+    end: end,
+    length: end - start,
+    text: textarea.value.slice(start, end)
+  };
+}
+function detectPaste(textarea, callback) {
+  textarea.onpaste = function() {
+    var sel = getTextAreaSelection(textarea);
+    var initialLength = textarea.value.length;
+    window.setTimeout(function() {
+      var val = textarea.value;
+      var pastedTextLength = val.length - (initialLength - sel.length);
+      var end = sel.start + pastedTextLength;
+      callback({
+        start: sel.start,
+        end: end,
+        length: pastedTextLength,
+        text: val.slice(sel.start, end)
+      });
+    }, 1);
+  };
+}
+
+function search(inputString){
+  var htmlResult="<div class='list'>";
+  if (inputString.trim() != '') {
+    urlSearch = '/ajax/get_json.php?action=search&content=product&q='+ encodeURIComponent(inputString);
+
+    $.getJSON(urlSearch, function(result){
+      var data = result;
+      data.forEach(function(item){
+        var price = Hura.Util.writeStringToPrice(item.price);
+        if(price!=0) price = price+' đ';
+        else price= "Liên hệ"
+
+        htmlResult+='<a href="'+item.productUrl+'">';
+        htmlResult+='<img src="'+item.productImage.medium+'" alt="'+item.productName+'" />';
+        htmlResult+='<span class="info">';
+        htmlResult+='<span class="name">'+item.productName+'</span>';
+        htmlResult+='<span class="price">'+price+'</span>';
+        htmlResult+='</span>';
+        htmlResult+='</a>';
+      });	
+      htmlResult+='</div>';
+      $(".autocomplete-suggestions").html(htmlResult);
+      $(".autocomplete-suggestions").show();
+    });
+
+  } else {
+    $(".autocomplete-suggestions").hide();
+  }
+}
+$(document).ready(function(){
+  var curr_text = "";
+  var count_select = 0;
+  var curr_element="";
+
+  var textarea = document.getElementById("text-search");
+  detectPaste(textarea, function(pasteInfo) {
+
+    inputString = pasteInfo.text;
+    search(inputString);
+
+  });
+
+  $("#text-search").bind('keyup',function(b) {
+    inputString = $(this).val();
+    search(inputString);
+  });
+  $('body').click(function(){
+    $(".autocomplete-suggestions").hide();
+  });
+});
+
+
+$(".filter-left .item .icon-info").hover(function () {
+  $(this).addClass("active");
+  $(this).closest(".item").find(".summary").show();
+},function () {
+  $(this).removeClass("active");
+  $(this).closest(".item").find(".summary").hide();
+});
+
+function getBanner(url,location,holder,limit){
+    var key = "location_"+location;
+  	var html = "";
+    $.getJSON(url,function(data){
+      //console.log("data",data);
+  	  if(data.length == 0) return;
+      data[key].forEach(function(item,index){
+  		html+= "<div class='item'>"+item.display+"</div>";
+      });
+  	  $(holder).html(html);
+  	});
+  }
+function getProductList(url, holder, limit, wrap_container, actionLoad) {
+  $.getJSON(url, function(result) {
+    var data = "";
+    var html = "";
+
+    if (typeof result.list !== 'undefined') data = result.list;
+    else data = result;
+    
+    //console.log("data",data);
+    data.forEach(function(item,index) {
+      if(index > limit - 1) return;
+
+      var price = item.price;
+      var priceFormat = Hura.Util.writeStringToPrice(price) +"đ";
+      if (price == 0) priceFormat = "Liên hệ";
+      var marketPrice = item.marketPrice;
+      var discount = 0;
+      if (marketPrice > price && price > 0) {
+        discount = Math.ceil(100 - price * 100 / marketPrice);
+      }
+      var totalOffer = item.specialOffer.all.length;
+      var totalOfferValue = 0;
+      item.specialOffer.all.forEach(function(a){
+      	totalOfferValue+=parseInt(a.cash_value);
+      });
+
+      html+='<div class="p-item">';
+      html+='<div class="p-container">';
+      html+='<a href="'+item.productUrl+'" class="p-img">';
+      if(item.productType.isHot == 1) html+='<span class="p-hot icons">HOT</span>';
+      if(item.productType.isNew == 1) html+='<span class="p-new icons">NEW</span>';
+      if(totalOffer > 0) html+='<span class="icon-offer"></span>';
+      html+='<img src="'+item.productImage.large+'" alt="'+item.productName+'">';
+      html+='</a>';
+  	  if(item.brand.image!='') html+='<div class="p-brand-img"><img class="p-brand-img" src="'+item.brand.image+'" alt="'+item.brand.name+'"></div>';
+      else html+='<div class="p-brand-img"></div>';
+  	  html+='<a href="'+item.productUrl+'" class="p-name">'+item.productName+'</a>';
+      html+='<span class="p-price">'+priceFormat+'</span>';
+      if(discount > 0){
+        html+='&nbsp;<span class="p-old-price">'+Hura.Util.writeStringToPrice(marketPrice)+'đ</span>';
+        html+='<span class="p-discount icons">-'+discount+'%</span>';
+      }else html+='&nbsp;<span class="p-old-price"></span>';
+  		
+      //html+='<span class="p-offer">';
+      //if(totalOffer > 0) html+= totalOffer + ' khuyến mãi';
+      //if(totalOfferValue > 0) html+=' trị giá <b>'+formatCurrency(totalOfferValue)+'đ</b>';
+      //html+='</span>';	
+  
+      html+='<div class="p-bottom">';
+     
+      //if(item.quantity > 0) html+='<span class="stock instock"><i class="fa fa-check"></i> Có hàng</span>';
+      //else html+='<span class="stock outstock"><i class="fa fa-check"></i> Liên hệ</span>';
+      if(item.quantity > 0) html+='<span class="stock instock"><i class="fa fa-check"></i> </span>';
+      html+='<span class="p-buy icons" onclick="listenBuyProduct('+item.productId+',0,1)"></span>';
+      html+='</div>';
+      html+='</div>';
+      html+='</div>';
+    });
+    
+    if (typeof wrap_container !== 'undefined') {
+      if(html=='') $(wrap_container).remove();
+    }
+
+    if (typeof actionLoad === 'undefined') {
+      actionLoad = 'replace';
+    }
+    
+    if(html=='') return false;
+    if (actionLoad == 'replace') $(holder).html(html);
+    else $(holder).append(html);
+  });
+}
+
+function getHourFormStringTime(str){
+	var time = str.split(',')[1];
+  	var hour = parseInt(time.split(":")[0]);
+  	if(time.indexOf('pm') > -1 && hour!=12) hour += 12;
+  	
+  	return hour;
+}
+
+function formatHiddenPrice(price){
+  var indexFormat = 0;
+  var priceFormat = "";
+  var arr_price = formatCurrency(price).split('');
+
+  indexFormat = formatCurrency(price).indexOf('.');
+
+  if(parseInt(price) < 1000000)
+    arr_price.forEach(function(item,index){                                          	
+      if(index > indexFormat - 3 && index < indexFormat) priceFormat+='?';
+      else priceFormat+=item;                                 
+    });
+  else
+    arr_price.forEach(function(item,index){                                          	
+      if(index > indexFormat && index < indexFormat + 4) priceFormat+='?';
+      else priceFormat+=item;                                 
+    });
+  
+  return priceFormat;
+}
+
+function getDealList(url, holder, limit, from_time, status,actionLoad) {
+  $.getJSON(url, function(result) {
+    var data = "";
+    var html = "";
+    var count = "";
+    
+    if (typeof result.list !== 'undefined') data = result.list;
+    else data = result;
+    
+    
+    data.forEach(function(item,index) {
+      if(count > limit - 1) return;
+      
+      //Cũ: if(parseInt(getHourFormStringTime(item.from_time)) == parseInt(from_time) && parseInt(item.product_info.id) > 0)
+      
+      if(parseInt(item.product_info.id) > 0){
+        
+        var product_info = item.product_info;
+        var price = parseInt(item.price);
+        var priceFormat = "";
+        if (price == 0) priceFormat = "Liên hệ";
+        else if(status == 0) priceFormat = formatHiddenPrice(price);
+        else priceFormat = Hura.Util.writeStringToPrice(price)+"đ";
+        
+        var productUrl = product_info.productUrl;
+        if(status == 1) productUrl = product_info.productUrl + "?deal="+item.id;
+        
+        var marketPrice = parseInt(product_info.price);
+        var discount = 0;
+        
+        if(status == 0) discount = "?"; //Deal chưa đến giờ chạy
+        else if (marketPrice > price) {
+          discount = Math.ceil(100 - price * 100 / marketPrice);
+        }
+
+        var totalOffer = product_info.specialOffer.all.length;
+        var totalOfferValue = 0;
+        product_info.specialOffer.all.forEach(function(a){
+          totalOfferValue+=parseInt(a.cash_value);
+        });
+
+        html+='<div class="p-item">';
+        html+='<div class="p-container">';
+        html+='<a href="'+productUrl+'" class="p-img">';
+        if(product_info.productType.isHot == 1) html+='<span class="p-hot icons">HOT</span>';
+        if(product_info.productType.isNew == 1) html+='<span class="p-new icons">NEW</span>';
+        html+='<img src="'+product_info.productImage.large+'" alt="'+product_info.productName+'">';
+        html+='</a>';
+        if(product_info.brand.image!='') html+='<div class="p-brand-img"><img class="p-brand-img" src="'+product_info.brand.image+'" alt="'+product_info.brand.name+'"></div>';
+      	else html+='<div class="p-brand-img"></div>';
+        html+='<a href="'+productUrl+'" class="p-name">'+product_info.productName+'</a>';
+        html+='<span class="p-price">'+priceFormat+'</span>';
+        if(discount != 0){
+          html+='&nbsp;<span class="p-old-price">'+Hura.Util.writeStringToPrice(marketPrice)+'đ</span>';
+          html+='<span class="p-discount icons">-'+discount+'%</span>';
+        }else html+='&nbsp;<span class="p-old-price"></span>';
+
+        html+='<span class="p-offer">';
+        if(totalOffer > 0) html+= totalOffer + ' khuyến mãi';
+        if(totalOfferValue > 0) html+=' trị giá <b>'+formatCurrency(totalOfferValue)+'đ</b>';
+        html+='</span>';	
+
+        html+='<div class="p-bottom">';
+        //if(item.quantity > 0) html+='<span class="stock instock"><i class="fa fa-check"></i> Có hàng</span>';
+        //else html+='<span class="stock outstock"><i class="fa fa-check"></i> Liên hệ</span>';
+        if(item.quantity > 0) html+='<span class="stock instock"><i class="fa fa-check"></i></span>';
+        html+='<span class="p-buy icons" onclick="listenBuyDeal('+item.id+',1,\'cart\')"></span>';
+        html+='</div>';
+        html+='<div class="p-order-status" data-left="'+item.quantity+'" data-total="'+product_info.quantity+'">';
+        html+='<span class="icons icon-order-status icon-order-status-deal"></span>';
+        html+='<span class="text">Còn lại '+item.quantity+'</span>';
+        html+='</div>';
+        html+='</div>';
+        html+='</div>';
+        
+        count++;
+      }//check from time
+    });
+
+    if (typeof actionLoad === 'undefined') {
+      actionLoad = 'replace';
+    }
+    
+    if(html=='') {
+      	//alert("Chưa có sản phẩm Deal ở khung giờ này");
+      	//$(".js-time-step .running").click();
+    	return false;
+    }
+    //console.log("from time :" + html);
+    if (actionLoad == 'replace') $(holder).html(html);
+    else $(holder).append(html);
+  });
+}
+function getProductRight(url, holder, limit, productId, actionLoad) {
+    $.getJSON(url, function(result) {
+        var data = result.list;
+        var html = "";
+        var count = 0;
+
+        data.forEach(function(item) {
+            if(count < limit && item.productId != productId){
+ 
+            var price = item.price;
+            var priceFormat = formatCurrency(price) + " đ";
+            if (price == 0) priceFormat = "Liên hệ";
+            var marketPrice = item.marketPrice;
+            var discount = 0;
+            if (marketPrice > price) {
+                discount = Math.ceil(100 - price * 100 / marketPrice);
+            }
+
+            html+='<div class="p-item-right">';
+            html+='<a href="'+item.productUrl+'" class="p-img-right">';
+            html+='<img src="'+item.productImage.medium+'" alt="'+item.productName+'">';
+  			if(discount > 0) html+='<div class="icons p-discount">-'+discount+'%</div>';
+            html+='</a>';
+            html+='<div class="p-info-right">'
+            html+='<a href="'+item.productUrl+'" class="p-name">'+item.productName+'</a>';
+            html+='<span class="p-price">'+priceFormat+'</span>';
+            if(discount > 0){
+            	html+='<span class="p-old-price">'+formatCurrency(marketPrice)+' đ</span>';
+            }
+  			html+='<a href="/so-sanh?list='+productId+','+item.productId+'" class="text-12 green block">Xem so sánh chi tiết</a>'
+            html+='</div>';
+            html+='</div>';
+	            
+	    	count++;	
+            }
+        });
+		if(html=='') return false;
+        if (typeof actionLoad === 'undefined') {
+            actionLoad = 'replace';
+        }
+        if (actionLoad == 'replace') $(holder).html(html);
+        else $(holder).append(html);
+    });
+}
+
+/*Popup giữa trang*/
+function loadPopup() {
+    $("#adv-popup .background,#adv-popup .banner").fadeIn("slow");
+}
+
+function disablePopup() {
+    $("#adv-popup .background,#adv-popup .banner").fadeOut("slow");
+}
+
+function centerPopup() {
+    var banner = $("#adv-popup .banner");
+    var a = document.documentElement.clientWidth;
+    var d = document.documentElement.clientHeight;
+    var c = banner.height();
+    var b = banner.width();
+    banner.css({
+        top: d / 2 - c / 2,
+        left: a / 2 - b / 2
+    });
+    $("#adv-popup .background").css({
+        height: d
+    })
+}
+// $(window).on('load', function() {
+//     loadPopup();
+//     centerPopup();
+
+//     $("#adv-popup .close").click(function() {
+//         disablePopup()
+//     });
+//     $("#adv-popup .background").click(function() {
+//         disablePopup()
+//     });
+//     $(document).keypress(function(a) {
+//         if (a.keyCode == 27 && popupStatus == 1) {
+//             disablePopup()
+//         }
+//     })
+// });
+
+
+
+
+!function(e){e.session={_id:null,_cookieCache:void 0,_init:function(){window.name||(window.name=Math.random()),this._id=window.name,this._initCache();var e=new RegExp(this._generatePrefix()+"=([^;]+);").exec(document.cookie);if(e&&document.location.protocol!==e[1])for(var t in this._clearSession(),this._cookieCache)try{window.sessionStorage.setItem(t,this._cookieCache[t])}catch(e){}document.cookie=this._generatePrefix()+"="+document.location.protocol+";path=/;expires="+new Date((new Date).getTime()+12e4).toUTCString()},_generatePrefix:function(){return"__session:"+this._id+":"},_initCache:function(){var e=document.cookie.split(";");for(var t in this._cookieCache={},e){var i=e[t].split("=");new RegExp(this._generatePrefix()+".+").test(i[0])&&i[1]&&(this._cookieCache[i[0].split(":",3)[2]]=i[1])}},_setFallback:function(e,t,i){var o=this._generatePrefix()+e+"="+t+"; path=/";return i&&(o+="; expires="+new Date(Date.now()+12e4).toUTCString()),document.cookie=o,this._cookieCache[e]=t,this},_getFallback:function(e){return this._cookieCache||this._initCache(),this._cookieCache[e]},_clearFallback:function(){for(var e in this._cookieCache)document.cookie=this._generatePrefix()+e+"=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";this._cookieCache={}},_deleteFallback:function(e){document.cookie=this._generatePrefix()+e+"=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;",delete this._cookieCache[e]},get:function(e){return window.sessionStorage.getItem(e)||this._getFallback(e)},set:function(e,t,i){try{window.sessionStorage.setItem(e,t)}catch(e){}return this._setFallback(e,t,i||!1),this},delete:function(e){return this.remove(e)},remove:function(e){try{window.sessionStorage.removeItem(e)}catch(e){}return this._deleteFallback(e),this},_clearSession:function(){try{window.sessionStorage.clear()}catch(e){for(var t in window.sessionStorage)window.sessionStorage.removeItem(t)}},clear:function(){return this._clearSession(),this._clearFallback(),this}},e.session._init()}(jQuery);
